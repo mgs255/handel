@@ -1,4 +1,4 @@
-### Handel - A 'composer' of docker-compose files 
+# Handel - 'composer' of docker-compose files 
 
 ![Build status](https://github.com/mgs255/handel/actions/workflows/build.yml/badge.svg?branch=main)
 
@@ -73,7 +73,10 @@ AWS tools.
 In order to use handel to download binaries from S3 you **must** export
 your default AWS credential KEY and SECRET to the current environment. In addition, 
 if the S3 bucket you are referencing is not located in us-east-1, then the `AWS_REGION`
- environment variable will need to used to define that, e.g:
+ environment variable will need to used to define that.  The examples in this file 
+are publicly readable accessible S3 objects in the eu-west-2 region.
+
+An example of setting the environment: 
 
 ```bash
 $ export AWS_ACCESS_KEY_ID=$(aws configure get default.aws_access_key_id)
@@ -97,7 +100,7 @@ or another scenario.
 As an example: 
 
 ```yaml
-template-folder-path: ./templates/
+template-folder-path: ./data/templates/
 
 reference:
   url: https://mgs-example-s3.s3.eu-west-2.amazonaws.com/versions-{env}.json
@@ -149,7 +152,7 @@ For example, we might define a service content-query service file (named content
  having the following: 
 
 ```yaml
-image: XXXXXXXX.dkr.ecr.us-east-1.amazonaws.com/content-query:1.0.4
+image: 121212121.dkr.ecr.us-east-1.amazonaws.com/content-query:1.0.4
 restart: always
 depends_on:
     - mysql
@@ -173,18 +176,24 @@ The reference system can be set up using an HTTP source, which defines a list of
 There are a 3 aspects of this which can be configured:
 
 * `url` - the HTTP endpoint from which the versions can be retrieved, currently this must be an 
-open HTTP endpoint, the 
+open HTTP endpoint, this is assumed to return a JSON object or array.
 * `env_mappings` - allows defining a set of mappings between dev, test, prod & staging and any other 
-names you like.  The {env} is replaced with the value of the env mapping.  
-* `jq_filter` - a jq script to convert the JSON body, into a JSON array in the following form: 
+names you like.  The url's {env} is replaced with the value of the env mapping.  This section may be 
+ommitted.
+* `jq_filter` - a jq script to convert the JSON body, into a JSON array.  If this field is defined 
+  the program will attempt to spawn the jq tool piping in the JSON body from the given URL, 
+  and read its output.  The output of the filtered JSON body is expected to be 
+  a JSON array of the form: 
 
 ```json
 [ 
   { "name": "service_1_name", "version": "service_1_version" },
-  { "name": "service_2_name", "version": "service_2_version" }
+  { "name": "service_2_name", "version": "service_2_version" },
+  ...
+  { "name": "service_n_name", "version": "service_n_version" },
 ]
 
-``` 
+```
 
 ## Building
 
@@ -213,7 +222,7 @@ This should be copied to somewhere on the PATH.
 
 `RUST_LOG='smithy_http_tower::dispatch=trace,smithy_http::middleware=trace'` handel ..
  
-## Still left to do
+## To do
 
 * ~~Lots of cleaning up~~
 * ~~Downloading dependencies via S3~~
@@ -221,8 +230,9 @@ This should be copied to somewhere on the PATH.
 * ~~Expand env vars for volume initialisation~~ 
 * ~~Initialisation of data directories/volumes based on zip files~~
 * ~~Fix windows build/execution issues~~ 
-* Detection of port conflicts 
 * ~~Make 'reference' system more generic - i.e: allow the configuration of the URL + means of extracting service 
   names/versions.~~
+* Automate detection of port conflicts
+* Suggestion of ports to free ports 
 
   

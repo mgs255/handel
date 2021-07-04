@@ -45,9 +45,8 @@ jobs:
 
       - name: Build
         run: cargo build --all --release
-     - name: Build
-       run: copy target/release/handel.exe target/release/handel_windows_x86_64.exe
-
+      - name: Rename binary 
+        run: copy target/release/handel.exe target/release/handel_windows_x86_64.exe
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
