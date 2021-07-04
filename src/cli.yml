@@ -1,5 +1,5 @@
 name: handel
-version: "0.3.4"
+version: "0.3.5"
 author: Michael Sommerville <msommerville@gmail.com>
 about: "This utility helps create docker compose 'compositions'.  In a nutshell, it takes as input a set of
        template files, and assembles those fragments into a docker-compose file.  It currently only supports
