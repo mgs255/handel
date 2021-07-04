@@ -1,0 +1,4 @@
+image: redis:4
+restart: always
+ports:
+    - 6379

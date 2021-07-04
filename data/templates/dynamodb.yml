@@ -1,0 +1,8 @@
+image: instructure/dynamo-local-admin
+restart: always
+volumes:
+    - $PWD/data/volumes/dynamodb-data:/var/lib/dynamodb
+ports:
+    - 9105:8000
+    - 8000:8000
+

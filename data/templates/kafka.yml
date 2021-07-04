@@ -1,0 +1,12 @@
+image: wurstmeister/kafka:2.12-2.4.0
+restart: always
+ports:
+    - 9092:9092
+environment:
+    KAFKA_ADVERTISED_HOST_NAME: kafka
+    KAFKA_HOST: localhost
+    KAFKA_PORT: 9092
+    KAFKA_BROKER_ID: 1
+    KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+depends_on:
+    - zookeeper

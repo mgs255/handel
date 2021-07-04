@@ -1,0 +1,37 @@
+template-folder-path: ./data/templates/
+
+reference:
+  url: "https://mgs-example-s3.s3.eu-west-2.amazonaws.com/versions-{env}.json"
+  env-mappings:
+    prod: production
+  jq-filter: '. | [to_entries[] | { "name": .key, "version": ( .value | to_entries[0].key ) }] '
+
+scenarios:
+  db:
+    - mysql
+
+  core:
+    - zookeeper
+    - kafka
+    - redis
+    - memcached
+    - dynamodb
+
+  app:
+    - db
+    - core
+
+volume-init:
+  - name: local-file-example
+    source: $PWD/data/volume-src/example-a.zip
+    target: $PWD/data/volumes/example-a
+  - name: invalid-env-example
+    source: "${BLAH_BLAH_BLAH}/data/dumps/invalid-data.zip"
+    target: $PWD/data/volumes/invalid-example
+  - name: s3-file-example
+    source: s3://mgs-example-s3/volume/example-b.zip
+    target: $PWD/data/volumes/example-b
+  - name: mysql-data
+    source: s3://mgs-example-s3/volume/mysql-data.zip
+    target:  $PWD/data/volumes/mysql
+

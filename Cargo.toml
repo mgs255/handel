@@ -1,0 +1,33 @@
+[package]
+name = "handel"
+version = "0.3.2"
+authors = ["Michael Sommerville <msommerville@gmail.com>"]
+edition = "2018"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1.6"
+s3 = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.9-alpha", package = "aws-sdk-s3" }
+smithy-http = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.9-alpha", package = "smithy-http" }
+yaml-rust = "0.4"
+clap = {version = "2.33", features = ["yaml"]}
+reqwest = { version = "0.11", features = ["json"] }
+log = "0.4.14"
+unzip = "0.1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.64"
+serde_yaml = "0.8"
+chrono = "0.4"
+regex = "1"
+http = "0.2.4"
+home = "0.5.3"
+shellexpand = "2.1.0"
+snafu = "0.6.10"
+zip = "0.5.8"
+tempfile = "3"
+stderrlog = "0.5"
