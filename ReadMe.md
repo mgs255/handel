@@ -95,7 +95,9 @@ The configuration file is yaml, and has 4 sections:
 * scenarios (map):  a map of scenario names to services.  Each entry can be 
 either the name of a fragment file (in the template directory without the yml extension) 
 or another scenario.
-* volume-init: List of name,source,target objects. 
+* volume-init: List of name, source, target objects.  The source can be either a path 
+  to a file on the local filesystem or it can be a S3 URI.  Environment variables will
+  be expanded if found.
 
 As an example: 
 
@@ -121,6 +123,10 @@ scenarios:
   app:
     - db
     - core
+
+  cq:
+    - app
+    - content-query
 
 volumes:
   - name: local-volume-example

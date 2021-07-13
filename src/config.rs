@@ -115,7 +115,7 @@ pub struct HandelConfig {
     #[serde(deserialize_with = "de_scenarios")]
     scenarios: HashMap<String, ServiceList>,
 
-    volume_init: Vec<VolumeInitializer>,
+    volume_init: Option<Vec<VolumeInitializer>>,
 }
 
 fn de_scenarios<'de, D>(deserializer: D) -> Result<HashMap<String, ServiceList>, D::Error>
@@ -150,7 +150,7 @@ impl HandelConfig {
         &self.reference
     }
 
-    pub fn volumes(self: &HandelConfig) -> &Vec<VolumeInitializer> {
+    pub fn volumes(self: &HandelConfig) -> &Option<Vec<VolumeInitializer>> {
         &self.volume_init
     }
 

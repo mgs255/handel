@@ -1,8 +1,7 @@
-use serde::Serialize;
-
 use crate::images::ContainerImage;
 use crate::reference::RunningService;
 use crate::templates::{ComposeService, ComposeServiceFragment};
+use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
 
@@ -26,6 +25,7 @@ impl DockerCompose {
         running: &[RunningService],
         local: &[ContainerImage],
     ) -> Result<String> {
+
         println!(
             "\nGenerating docker compose file based on {} services.",
             svcs.len()

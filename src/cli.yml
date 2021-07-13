@@ -1,9 +1,7 @@
 name: handel
-version: "0.3.5"
+version: "0.3.6"
 author: Michael Sommerville <msommerville@gmail.com>
-about: "This utility helps create docker compose 'compositions'.  In a nutshell, it takes as input a set of
-       template files, and assembles those fragments into a docker-compose file.  It currently only supports
-       a subset of docker compose functionality."
+about: "This utility helps create docker compose 'compositions'.  In a nutshell, it takes as input a set of template files, and assembles those fragments into a docker-compose file.  It currently only supports a subset of docker compose functionality."
 args:
   - env:
       short: e
@@ -19,8 +17,7 @@ args:
   - since:
       short: s
       long: since
-      help: Maxiumum age of locally built containers to consider.  This uses time
-            units s,m,h,d,w which should be prefixed by an integer, e.g. 15m, 3h, 2d etc.
+      help: Maxiumum age of locally built containers to consider.  This uses time units (s,m,h,d,w) which should be prefixed by an integer, e.g. 15m, 3h, 2d etc.
       default_value: "1d"
   - verbosity:
       short: v

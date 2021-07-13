@@ -83,8 +83,10 @@ struct S3Location {
 pub struct Volumes {}
 
 impl Volumes {
-    pub async fn initialise(volumes: &[VolumeInitializer]) -> Result<()> {
-        let vols = volumes
+    pub async fn initialise(volumes: &Option<Vec<VolumeInitializer>>) -> Result<()> {
+
+        let vols = volumes.as_ref()
+            .unwrap_or(&Vec::new())
             .iter()
             .filter_map(|v| {
                 debug!("{} - considering volume {:?}", module_path!(), &v);

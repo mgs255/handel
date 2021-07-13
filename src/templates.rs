@@ -1,14 +1,13 @@
 use std::collections::HashMap;
-
+use std::cmp::Ordering;
 use log::*;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error};
 use snafu::{ResultExt, Snafu};
 
 #[derive(Debug, Snafu)]
-pub enum Error {
+pub enum TemplateError {
     #[snafu(display(r#"Unable to parse container repository string: {}"#, input))]
     RepositoryFormat { input: String },
 
@@ -47,15 +46,65 @@ pub enum Error {
         file: String,
         source: serde_yaml::Error,
     },
+
+    #[snafu(display(r#"Unable to parse port mapping: {}"#, input))]
+    PortMappingFormat {
+        input: String,
+    },
 }
 
-type Result<T, E = Error> = std::result::Result<T, E>;
+type Result<T, E = TemplateError> = std::result::Result<T, E>;
 
 #[derive(Debug)]
 pub struct ImageVersion {
     name: String,
     version: Option<String>,
     repository: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PortMapping {
+    source: u16,
+    target: u16
+}
+
+impl<'de> Deserialize<'de> for PortMapping {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+
+        let captures = Regex::new(r"(?P<src>\d{1,5})(?::(?P<tgt>\d{1,5}))?")
+            .map(|r| r.captures(&s))
+            .expect("Internal error: invalid regular expression");
+
+        let captures = captures
+            .ok_or_else(||D::Error::custom("Port mapping unexpected"))?;
+
+        let src_port = captures.name("src")
+            .map(|m| m.as_str().parse::<u16>().unwrap_or(0))
+            .ok_or_else(||D::Error::custom("No source port"))?;
+
+        let tgt_port = captures.name("tgt")
+            .map(|m| m.as_str().parse::<u16>().unwrap_or(0))
+            .unwrap_or(src_port);
+
+        Ok(PortMapping {
+            source: src_port,
+            target: tgt_port,
+        })
+    }
+
+}
+
+impl Serialize for PortMapping {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer,
+    {
+        let s = format!("{}:{}", self.source, self.target);
+        serializer.serialize_str(&s)
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -70,7 +119,7 @@ pub struct ComposeServiceFragment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub environment: Option<HashMap<String, String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ports: Option<Vec<String>>,
+    pub ports: Option<Vec<PortMapping>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -164,6 +213,7 @@ impl ComposeService {
 impl ComposeServiceMap {
     pub async fn new(templates_dir: &str) -> Result<ComposeServiceMap> {
         let mut templates = HashMap::new();
+        let mut target_ports: HashMap<u16,Vec<String>> = HashMap::new();
 
         let entries = std::fs::read_dir(templates_dir).context(TemplateDirectoryNotReadable {
             dir: templates_dir.to_string(),
@@ -223,7 +273,28 @@ impl ComposeServiceMap {
                 fragment: service_fragment,
             };
 
+            if let Some(p) = service.fragment.ports.as_ref() {
+                p.iter()
+                    .for_each(|pm| {
+                        target_ports.entry(pm.source)
+                            .or_insert_with(Vec::new)
+                            .push(service.name.clone());
+                    });
+            };
+
             templates.insert(stem.to_string(), service);
+        }
+
+        if let true = target_ports.values().any(|s|s.len()>1) {
+            let x = target_ports.iter()
+                .filter(|(_,v)|v.len()>1)
+                .map(|(k,v)|{
+                    let conflicts = v.join(", ");
+                    format!("\t{}\t{}", k, conflicts)
+                })
+                .collect::<Vec<_>>();
+
+            eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}", x.join("\n"));
         }
 
         Ok(ComposeServiceMap { templates })
@@ -247,7 +318,7 @@ impl ImageVersion {
                 let name =
                     c.name("svc")
                         .map(|m| m.as_str().to_string())
-                        .ok_or(Error::ServiceName {
+                        .ok_or(TemplateError::ServiceName {
                             input: image_str.to_string(),
                         })?;
 
@@ -257,7 +328,7 @@ impl ImageVersion {
                     repository: c.name("repo").map(|m| m.as_str().to_string()),
                 })
             }
-            _ => Err(Error::RepositoryFormat {
+            _ => Err(TemplateError::RepositoryFormat {
                 input: image_str.to_string(),
             }),
         };
@@ -284,6 +355,7 @@ impl ImageVersion {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_yaml;
 
     #[test]
     fn test1() {
@@ -327,5 +399,47 @@ mod tests {
         assert_eq!("memcached", i.name);
         assert_eq!(None, i.repository);
         assert_eq!("1.6.7", i.version.unwrap());
+    }
+
+    #[test]
+    fn test_fragment_deserialisation() {
+        let t = r#"
+image: foo
+"#;
+        let frag: ComposeServiceFragment = serde_yaml::from_str(t).unwrap();
+        assert_eq!("foo", frag.image);
+        assert!(frag.ports.is_none());
+    }
+
+    #[test]
+    fn test_fragment_deserialisation2() {
+        let t = r#"
+image: foo
+ports:
+    - 121:343
+    - 212:434
+"#;
+        let frag: ComposeServiceFragment = serde_yaml::from_str(t).unwrap();
+        assert_eq!("foo", frag.image);
+        assert!(frag.ports.is_some());
+        let ports = frag.ports.unwrap();
+        assert_eq!(ports.len(), 2);
+        assert_eq!(121, ports.get(0).unwrap().source);
+        assert_eq!(343, ports.get(0).unwrap().target);
+        assert_eq!(212, ports.get(1).unwrap().source);
+        assert_eq!(434, ports.get(1).unwrap().target);
+    }
+
+    #[test]
+    fn test_fragment_deserialisation3() {
+        let t = r#"
+image: foo
+ports:
+    - 121:343
+    - 212
+"#;
+        let frag: serde_yaml::Result<ComposeServiceFragment> = serde_yaml::from_str(t);
+
+        assert!(frag.is_err());
     }
 }

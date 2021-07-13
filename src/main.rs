@@ -35,7 +35,7 @@ pub enum Error {
     },
 
     #[snafu(display(r#"Problem occurred trying to load service fragments.\n{}"#, source))]
-    Fragments { source: crate::templates::Error },
+    Fragments { source: crate::templates::TemplateError },
 
     #[snafu(display(
         r#"Problem occurred trying to build required services list.\n{}"#,
