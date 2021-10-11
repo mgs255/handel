@@ -6,6 +6,9 @@ use std::path::{Path, PathBuf};
 use http::Uri;
 use tokio_stream::StreamExt;
 
+use aws_config::meta::region::RegionProviderChain;
+use s3::{Client, Config, Region};
+
 use snafu::{ResultExt, Snafu};
 
 #[derive(Debug, Snafu)]
@@ -210,13 +213,26 @@ fn parse_uri_as_bucket_and_key(path: &str) -> Result<S3Location> {
 }
 
 async fn unzip_file_from_s3(volume: &VolumeInitializer) -> Result<()> {
-    let region = std::env::var("AWS_REGION").unwrap_or_else(|_| "us-east-1".to_string());
+    //let region = std::env::var("AWS_REGION").unwrap_or_else(|_| "us-east-1".to_string());
 
-    let conf = s3::Config::builder()
-        .region(s3::Region::new(region))
-        .build();
+    // let region = aws_types::region::default_provider().region()
+    //     .unwrap_or(s3::Region::new("us-east-1"));
+    //
+    // let credential_provider = aws_auth_providers::DefaultProviderChain::builder()
+    //     .region(&region)
+    //     .build();
 
-    let client = s3::Client::from_conf(conf);
+    // let conf = s3::Config::builder()
+    //     .credentials_provider(credential_provider)
+    //     .region(region)
+    //     .build();
+    //
+    // let client = s3::Client::from_conf(conf);
+
+    let region_provider = RegionProviderChain::default_provider()
+        .or_else(Region::new("us-east-1"));
+    let shared_config = aws_config::from_env().region(region_provider).load().await;
+    let client = Client::new(&shared_config);
 
     let s3loc = parse_uri_as_bucket_and_key(&volume.source)?;
 

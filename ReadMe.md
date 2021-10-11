@@ -63,27 +63,6 @@ will be skipped.
 bucket (if used) must be accessible from the current environment.  In practice this means 
 that default configuration for the AWS CLI must allow access to any given S3 URIs.
 
-## AWS Credentials Note
-
-The S3 integration is provided by a currently alpha version of the AWS Rust SDK.
-At this time, this SDK only supports providing credentials via environment
-variables, rather than using the standard credential chain behaviour of other
-AWS tools.  
-
-In order to use handel to download binaries from S3 you **must** export
-your default AWS credential KEY and SECRET to the current environment. In addition, 
-if the S3 bucket you are referencing is not located in us-east-1, then the `AWS_REGION`
- environment variable will need to used to define that.  The examples in this file 
-are publicly readable accessible S3 objects in the eu-west-2 region.
-
-An example of setting the environment: 
-
-```bash
-$ export AWS_ACCESS_KEY_ID=$(aws configure get default.aws_access_key_id)
-$ export AWS_SECRET_ACCESS_KEY=$(aws configure get default.aws_secret_access_key)
-$ export AWS_REGION=eu-west-2
-```
-
 ## Configuration file format 
   
 The configuration file is yaml, and has 4 sections:
