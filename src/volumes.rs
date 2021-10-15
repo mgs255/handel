@@ -7,7 +7,7 @@ use http::Uri;
 use tokio_stream::StreamExt;
 
 use aws_config::meta::region::RegionProviderChain;
-use s3::{Client, Config, Region};
+use s3::{Client, Region};
 
 use snafu::{ResultExt, Snafu};
 

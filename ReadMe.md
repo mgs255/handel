@@ -209,6 +209,11 @@ This should be copied to somewhere on the PATH.
  
 ## To do
 
+* Suggestion of ports to free ports 
+* Consider using an identifier e.g: @ or ! to explicitly mark an 
+  entry as a scenario.
+* ~~Automate detection of port conflicts~~
+
 * ~~Lots of cleaning up~~
 * ~~Downloading dependencies via S3~~
 * ~~Better error handling/messages/stack-traces.~~
@@ -217,7 +222,8 @@ This should be copied to somewhere on the PATH.
 * ~~Fix windows build/execution issues~~ 
 * ~~Make 'reference' system more generic - i.e: allow the configuration of the URL + means of extracting service 
   names/versions.~~
-* Automate detection of port conflicts
-* Suggestion of ports to free ports 
+
+
+  
 
   

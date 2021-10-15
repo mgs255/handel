@@ -286,7 +286,7 @@ impl ComposeServiceMap {
         }
 
         if let true = target_ports.values().any(|s|s.len()>1) {
-            let x = target_ports.iter()
+            let conflicting_ports = target_ports.iter()
                 .filter(|(_,v)|v.len()>1)
                 .map(|(k,v)|{
                     let conflicts = v.join(", ");
@@ -294,7 +294,8 @@ impl ComposeServiceMap {
                 })
                 .collect::<Vec<_>>();
 
-            eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}", x.join("\n"));
+            eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}",
+                      conflicting_ports.join("\n") );
         }
 
         Ok(ComposeServiceMap { templates })
