@@ -1,8 +1,8 @@
 [package]
 name = "handel"
-version = "0.3.6"
+version = "0.3.7"
 authors = ["Michael Sommerville <msommerville@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [profile.release]
 opt-level = 'z'
@@ -12,10 +12,9 @@ codegen-units = 1
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1.6"
-s3 = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.19-alpha", package = "aws-sdk-s3" }
-smithy-http = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.19-alpha", package = "smithy-http" }
-aws-types = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.19-alpha", package = "aws-types" }
-aws-config = { git = "https://github.com/awslabs/aws-sdk-rust", tag = "v0.0.19-alpha", package = "aws-config" }
+aws-config = "0.4"
+s3 = { package="aws-sdk-s3", version = "0.4" }
+smithy-http = { package = "aws-smithy-http", version = "0.34" }
 yaml-rust = "0.4"
 clap = {version = "2.33", features = ["yaml"]}
 reqwest = { version = "0.11", features = ["json"] }

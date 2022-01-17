@@ -65,7 +65,9 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 #[tokio::main]
 async fn main() -> Result<()> {
     let yaml = load_yaml!("./cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = App::from_yaml(yaml)
+        .version(crate_version!())
+        .get_matches();
     let config_file = matches
         .value_of("config")
         .expect("The input file is required - should default to handel.yml");
@@ -73,7 +75,7 @@ async fn main() -> Result<()> {
     let since = matches
         .value_of("since")
         .expect("Expecting a value for since");
-    let verbose = matches.occurrences_of("verbosity") as usize;
+    let verbose = matches.occurrences_of("verbosity") as usize + 1;
     let quiet = matches.is_present("quiet");
 
     stderrlog::new()
