@@ -45,7 +45,7 @@ jobs:
 
       - name: Build
         run: cargo build --all --release
-      - name: Rename binary 
+      - name: Rename binary
         run: copy target/release/handel.exe target/release/handel_windows_x86_64.exe
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -70,14 +70,20 @@ jobs:
           default: true
           override: true
 
+      - name: Add aarch64-apple-darwin target
+        run: rustup target add aarch64-apple-darwin
+
+      - name: Add x86_64-apple-darwin target
+        run: rustup target add x86_64-apple-darwin
+
       - name: Build for mac
-        run: cargo build --all --release && strip target/release/handel && mv target/release/handel target/release/handel_darwin_x86_64
+        run: cargo build --all --target aarch64-apple-darwin --release && strip target/aarch64-apple-darwin/release/handel && cargo build --all --target x86_64-apple-darwin --release && strip target/x86_64-apple-darwin/release/handel && lipo -create target/aarch64-apple-darwin/release/handel target/x86_64-apple-darwin/release/handel -output target/handel_darwin_universal
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            target/release/handel_darwin_x86_64
+            target/handel_darwin_universal
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
