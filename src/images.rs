@@ -110,7 +110,11 @@ impl ContainerImages {
         String::from_utf8(output.stdout)
             .context(ParseChildOutput)?
             .lines()
-            .filter_map(|line| serde_json::from_str::<LocalContainerImage>(&line).ok())
+            .filter_map(|line| serde_json::from_str::<LocalContainerImage>(line).ok())
+            .filter(|lc| {
+                debug!("tag: {:?}", &lc.tag);
+                !matches!(lc.tag.as_str(), "TRUNK")
+            })
             .filter_map(|lc| match "<none>".eq(&lc.repository) {
                 true => None,
                 false => Some(lc),
@@ -156,6 +160,7 @@ impl ContainerImages {
         if !images.is_empty() {
             let names = images
                 .iter()
+                .filter(|&c| !c.container.tag.ends_with("TRUNK"))
                 .map(|c| format!("{}:{}", &c.name, &c.container.tag))
                 .collect::<Vec<_>>();
             println!("\nRecent images:\n\t{}", names.join("\n\t"));

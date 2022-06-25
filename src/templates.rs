@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::cmp::Ordering;
+use std::ops::RangeInclusive;
 use log::*;
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -111,6 +112,8 @@ impl Serialize for PortMapping {
 pub struct ComposeServiceFragment {
     pub image: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub platform: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub restart: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub depends_on: Option<Vec<String>>,
@@ -211,9 +214,11 @@ impl ComposeService {
 }
 
 impl ComposeServiceMap {
-    pub async fn new(templates_dir: &str) -> Result<ComposeServiceMap> {
+    pub async fn new(templates_dir: &str, port_range: Option<(u16,u16)>) -> Result<ComposeServiceMap> {
+
         let mut templates = HashMap::new();
         let mut target_ports: HashMap<u16,Vec<String>> = HashMap::new();
+        let mut assigned_ports = HashSet::<u16>::new();
 
         let entries = std::fs::read_dir(templates_dir).context(TemplateDirectoryNotReadable {
             dir: templates_dir.to_string(),
@@ -276,6 +281,7 @@ impl ComposeServiceMap {
             if let Some(p) = service.fragment.ports.as_ref() {
                 p.iter()
                     .for_each(|pm| {
+                        assigned_ports.insert(pm.source);
                         target_ports.entry(pm.source)
                             .or_insert_with(Vec::new)
                             .push(service.name.clone());
@@ -296,7 +302,21 @@ impl ComposeServiceMap {
 
             eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}",
                       conflicting_ports.join("\n") );
+
+            if let Some(r) = port_range {
+                let free_ports = RangeInclusive::<u16>::new(r.0, r.1)
+                    .filter(|p| !assigned_ports.contains(p) )
+                    .take(conflicting_ports.len())
+                    .map(|p|format!("\t{}", p))
+                    .collect::<Vec<_>>();
+
+                eprintln!("The following host ports are free in the port-range:\n{}",
+                          free_ports.join("\n") );
+            }
+
         }
+
+
 
         Ok(ComposeServiceMap { templates })
     }
@@ -435,12 +455,15 @@ ports:
     fn test_fragment_deserialisation3() {
         let t = r#"
 image: foo
+platform: amd64
 ports:
     - 121:343
     - 212
 "#;
-        let frag: serde_yaml::Result<ComposeServiceFragment> = serde_yaml::from_str(t);
+        let frag: ComposeServiceFragment = serde_yaml::from_str(t).unwrap();
 
-        assert!(frag.is_err());
+        assert_eq!("foo", frag.image);
+        assert!(frag.platform.is_some());
+        assert_eq!("amd64", frag.platform.unwrap());
     }
 }

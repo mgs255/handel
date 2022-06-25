@@ -1,4 +1,5 @@
 image: instructure/dynamo-local-admin
+platform: amd64
 restart: always
 volumes:
     - $PWD/data/volumes/dynamodb-data:/var/lib/dynamodb

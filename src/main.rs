@@ -100,7 +100,7 @@ async fn main() -> Result<()> {
     let (versions, images, fragment_map, volumes) = tokio::join!(
         RunningServices::load(env, config.get_reference()),
         ContainerImages::find(since),
-        ComposeServiceMap::new(config.template_dir()),
+        ComposeServiceMap::new(config.template_dir(),config.get_port_range()),
         Volumes::initialise(config.volumes())
     );
 
