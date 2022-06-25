@@ -19,7 +19,7 @@ The tool assists the developer in two specific ways:
     HTTP GET request. 
         
 Unlike the container-juggler tool, scenarios nest and also use the docker-compose
-'depends_on' directive to construct a list of scenario dependenies.
+'depends_on' directive to construct a list of scenario dependencies.
         
 ## Usage
  
@@ -43,8 +43,8 @@ ARGS:
     <scenario>    Sets the scenario to use
 ```
 
-In a nutshell to use it to create a compose-file based on the profile `cq`
-for the 'content-query' service plus the service in the profile plus any dependencies
+In a nutshell, to use it to create a compose-file based on the profile `cq`
+for the 'content-query' service plus any dependencies
 it requires, we can use something like:
 
 `handle --since=1d --env=test cq`
@@ -65,7 +65,7 @@ that default configuration for the AWS CLI must allow access to any given S3 URI
 
 ## Configuration file format 
   
-The configuration file is yaml, and has 4 sections:
+The configuration file is defined in YAML, and has 4 sections:
 
 * template-folder-path (string): path containing the docker-compose fragments.
 * reference (object - optional): an HTTP endpoint from which to fetch a list of 
@@ -74,14 +74,18 @@ The configuration file is yaml, and has 4 sections:
 * scenarios (map):  a map of scenario names to services.  Each entry can be 
 either the name of a fragment file (in the template directory without the yml extension) 
 or another scenario.
-* volume-init: List of name, source, target objects.  The source can be either a path 
-  to a file on the local filesystem or it can be a S3 URI.  Environment variables will
-  be expanded if found.
+* volume-init: (list optional). Each volume consists of name, source, target objects.  
+  The source can be either a path to a file on the local filesystem or it can be a S3
+  URI.  Environment variables will be expanded if found.
+* port-range: (string - optional) a range of ports which may be used for listening to port-forwards
+  from docker.
 
 As an example: 
 
 ```yaml
 template-folder-path: ./data/templates/
+
+port-range: 8200-9600
 
 reference:
   url: https://mgs-example-s3.s3.eu-west-2.amazonaws.com/versions-{env}.json
@@ -124,14 +128,15 @@ volumes:
 *Note:*  In order to be able to compare versions, the fragment-file, image-name and service
   name in the reference system are all expected to match.
   
-Each fragment must have at minimum at least an image entry:
+Each fragment must have at minimum at least an image entry, but the template fragment supports the 
+following sections:
 
 * image: [the docker image uri](https://docs.docker.com/compose/compose-file/compose-file-v3/#image) 
-* depends_on: [a list of services that this service requires in order to run](https://docs.docker.com/compose/compose-file/compose-file-v3/#depends_on)
-* restart: [one of "no","always","unless-stopped" or "on-failure"](https://docs.docker.com/compose/compose-file/compose-file-v3/#restart)
-* environment: [a map of environment variables to provide to the container](https://docs.docker.com/compose/compose-file/compose-file-v3/#environment)
-* ports: [list of source:target pairs to define port mappings](https://docs.docker.com/compose/compose-file/compose-file-v3/#ports) 
-* ports: [list of source:target pairs to define port mappings](https://docs.docker.com/compose/compose-file/compose-file-v3/#ports)
+* depends_on: [a list of services that this service requires in order to run](https://docs.docker.com/compose/compose-file/compose-file-v2/#depends_on)
+* restart: [one of "no","always","unless-stopped" or "on-failure"](https://docs.docker.com/compose/compose-file/compose-file-v2/#restart)
+* environment: [a map of environment variables to provide to the container](https://docs.docker.com/compose/compose-file/compose-file-v2/#environment)
+* ports: [list of source:target pairs to define port mappings](https://docs.docker.com/compose/compose-file/compose-file-v2/#ports) 
+* platform: [target platform this service will run on](https://docs.docker.com/compose/compose-file/compose-file-v2/#platform)
 
 For example, we might define a service content-query service file (named content-query.yml)
  having the following: 
@@ -185,10 +190,10 @@ ommitted.
 Requires a recent version of rust.
 
 ```
-$ rustup  show
+$ rustup show
    ...
-   stable-x86_64-apple-darwin (default)
-   rustc 1.53.0 (53cb7b09b 2021-06-17)
+    stable-aarch64-apple-darwin (default)
+    rustc 1.61.0 (fe5b13d68 2022-05-18)
 ```
 
 ### Building the binary 
@@ -209,11 +214,10 @@ This should be copied to somewhere on the PATH.
  
 ## To do
 
-* Suggestion of ports to free ports 
 * Consider using an identifier e.g: @ or ! to explicitly mark an 
   entry as a scenario.
+* ~~Suggestion of free ports to use~~
 * ~~Automate detection of port conflicts~~
-
 * ~~Lots of cleaning up~~
 * ~~Downloading dependencies via S3~~
 * ~~Better error handling/messages/stack-traces.~~

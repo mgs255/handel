@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::mem::swap;
 use std::path::Path;
 
 use serde::{Deserialize, Deserializer};
 use yaml_rust::Yaml;
+use regex::Regex;
+use log::{info,debug};
 
 use crate::reference::Reference;
 use crate::templates::{ComposeService, ComposeServiceMap};
@@ -110,6 +113,10 @@ pub type ServiceList = Vec<String>;
 pub struct HandelConfig {
     template_folder_path: String,
 
+    #[serde(default)]
+    #[serde(deserialize_with = "de_port_range")]
+    port_range: Option<(u16,u16)>,
+
     reference: Option<Reference>,
 
     #[serde(deserialize_with = "de_scenarios")]
@@ -124,6 +131,29 @@ where
 {
     let v = HashMap::<String, ServiceList>::deserialize(deserializer)?;
     Ok(v)
+}
+
+fn de_port_range<'de, D>(deserializer: D) -> Result<Option<(u16,u16)>, D::Error>
+    where
+        D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    let re = Regex::new(r"(?P<p1>[1-9]\d{0,4})-(?P<p2>[1-9]\d{0,4})")
+        .expect("Regex not valid");
+
+    let ports = match re.captures(&s) {
+        Some(c) => {
+            let mut p1 = c.name("p1").map(|m| m.as_str().parse::<u16>().unwrap()).unwrap();
+            let mut p2 = c.name("p2").map(|m| m.as_str().parse::<u16>().unwrap()).unwrap();
+            if p1 > p2 {
+                swap(&mut p1,&mut p2)
+            }
+            Some((p1,p2))
+        },
+        _ => None,
+    };
+
+    Ok(ports)
 }
 
 const EMPTY_SERVICE_LIST: &ServiceList = &Vec::<String>::new();
@@ -148,6 +178,10 @@ impl HandelConfig {
 
     pub fn get_reference(self: &HandelConfig) -> &Option<Reference> {
         &self.reference
+    }
+
+    pub fn get_port_range(self: &HandelConfig) -> Option<(u16,u16)> {
+        self.port_range
     }
 
     pub fn volumes(self: &HandelConfig) -> &Option<Vec<VolumeInitializer>> {
@@ -234,5 +268,62 @@ impl HandelConfig {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_yaml;
+
+    #[test]
+    fn test_config_port_range_ok() {
+        let t = r#"
+template-folder-path: .
+port-range: 1234-5678
+scenarios:
+  a:
+    - b
+"#;
+        let frag: HandelConfig = serde_yaml::from_str(t).unwrap();
+        assert_eq!(frag.port_range.unwrap(),(1234,5678));
+    }
+
+    #[test]
+    fn test_config_port_range_missing() {
+        let t = r#"
+template-folder-path: .
+scenarios:
+  a:
+    - b
+"#;
+        let frag: HandelConfig = serde_yaml::from_str(t).unwrap();
+        assert!(frag.port_range.is_none());
+    }
+
+    #[test]
+    fn test_config_port_range_missing_first() {
+        let t = r#"
+template-folder-path: .
+port-range: -5678
+scenarios:
+  a:
+    - b
+"#;
+        let frag: HandelConfig = serde_yaml::from_str(t).unwrap();
+        assert!(frag.port_range.is_none());
+    }
+
+    #[test]
+    fn test_config_port_range_missing_last() {
+        let t = r#"
+template-folder-path: .
+port-range: 5678-
+scenarios:
+  a:
+    - b
+"#;
+        let frag: HandelConfig = serde_yaml::from_str(t).unwrap();
+        assert!(frag.port_range.is_none());
     }
 }
