@@ -67,7 +67,6 @@ pub struct ContainerImage {
 
 #[derive(Debug, Clone)]
 pub struct ContainerImages {
-    images: Vec<ContainerImage>,
 }
 
 impl ContainerImage {
@@ -112,7 +111,7 @@ impl ContainerImages {
             .lines()
             .filter_map(|line| serde_json::from_str::<LocalContainerImage>(line).ok())
             .filter(|lc| {
-                debug!("tag: {:?}", &lc.tag);
+                debug!("id: {} tag: {} size: {}", &lc.id, &lc.tag, &lc.size);
                 !matches!(lc.tag.as_str(), "TRUNK")
             })
             .filter_map(|lc| match "<none>".eq(&lc.repository) {

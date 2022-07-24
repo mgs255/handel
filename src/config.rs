@@ -3,9 +3,8 @@ use std::mem::swap;
 use std::path::Path;
 
 use serde::{Deserialize, Deserializer};
-use yaml_rust::Yaml;
+//use yaml_rust::Yaml;
 use regex::Regex;
-use log::{info,debug};
 
 use crate::reference::Reference;
 use crate::templates::{ComposeService, ComposeServiceMap};
@@ -91,20 +90,6 @@ pub enum Error {
 pub struct ScenarioError(Box<Error>);
 
 type Result<T, E = Error> = std::result::Result<T, E>;
-
-#[derive(Debug)]
-pub struct Template {
-    name: String,
-    image: String,
-    depends_on: Vec<String>,
-    volumes: Vec<String>,
-    raw_yaml: Vec<Yaml>,
-}
-
-#[derive(Debug)]
-pub struct Templates {
-    templates: Vec<Template>,
-}
 
 pub type ServiceList = Vec<String>;
 

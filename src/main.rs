@@ -104,7 +104,7 @@ async fn main() -> Result<()> {
         Volumes::initialise(config.volumes())
     );
 
-    let _ = volumes.unwrap_or_else(|e| {
+    volumes.unwrap_or_else(|e| {
         error!("Unable to initialise volumes.\n{:?}", e);
         std::process::exit(1);
     });

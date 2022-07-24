@@ -50,9 +50,7 @@ pub struct RunningService {
     version: String,
 }
 
-#[derive(Debug)]
 pub struct RunningServices {
-    services: Vec<RunningService>,
 }
 
 #[derive(Debug, Deserialize)]
