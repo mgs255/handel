@@ -1,6 +1,6 @@
 [package]
 name = "handel"
-version = "0.3.8"
+version = "0.3.9"
 authors = ["Michael Sommerville <msommerville@gmail.com>"]
 edition = "2021"
 
@@ -12,15 +12,14 @@ codegen-units = 1
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 tokio-stream = "0.1.6"
-aws-config = "0.4"
-s3 = { package="aws-sdk-s3", version = "0.4" }
-smithy-http = { package = "aws-smithy-http", version = "0.34" }
+aws-config = "0.55.0"
+s3 = {package="aws-sdk-s3", version = "0.25.1"}
 yaml-rust = "0.4"
 clap = {version = "2.33", features = ["yaml"]}
 reqwest = { version = "0.11", features = ["json"] }
 log = "0.4.14"
 unzip = "0.1.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.64"
 serde_yaml = "0.8"
 chrono = "0.4"

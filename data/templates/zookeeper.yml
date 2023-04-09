@@ -1,4 +1,4 @@
 image: zookeeper:3.5.6
 restart: always
 ports:
-    - 2181:2181
+    - 2181

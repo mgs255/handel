@@ -65,8 +65,16 @@ pub struct ImageVersion {
 
 #[derive(Debug, Clone)]
 pub struct PortMapping {
-    source: u16,
+    source: Option<u16>,
     target: u16
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DeployOptions {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    replicas: Option<u16>,
 }
 
 impl<'de> Deserialize<'de> for PortMapping {
@@ -76,24 +84,31 @@ impl<'de> Deserialize<'de> for PortMapping {
     {
         let s = String::deserialize(deserializer)?;
 
-        let captures = Regex::new(r"(?P<src>\d{1,5})(?::(?P<tgt>\d{1,5}))?")
+        let captures = Regex::new(r"(?P<a>\d{1,5})(?::(?P<b>\d{1,5}))?")
             .map(|r| r.captures(&s))
             .expect("Internal error: invalid regular expression");
 
         let captures = captures
-            .ok_or_else(||D::Error::custom("Port mapping unexpected"))?;
+            .ok_or_else(|| D::Error::custom("Port mapping unexpected"))?;
 
-        let src_port = captures.name("src")
+        let port_a = captures.name("a")
             .map(|m| m.as_str().parse::<u16>().unwrap_or(0))
-            .ok_or_else(||D::Error::custom("No source port"))?;
+            .ok_or_else(|| D::Error::custom("No port "))?;
 
-        let tgt_port = captures.name("tgt")
-            .map(|m| m.as_str().parse::<u16>().unwrap_or(0))
-            .unwrap_or(src_port);
+        let port_b = captures.name("b")
+            .map(|m| Some(m.as_str().parse::<u16>().unwrap_or(0)))
+            .unwrap_or(None);
+
+        if let Some(pb) = port_b {
+            return Ok(PortMapping {
+                source: Some(port_a),
+                target: pb,
+            });
+        }
 
         Ok(PortMapping {
-            source: src_port,
-            target: tgt_port,
+            source: None,
+            target: port_a,
         })
     }
 
@@ -103,7 +118,11 @@ impl Serialize for PortMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer,
     {
-        let s = format!("{}:{}", self.source, self.target);
+        let s = if let Some(source_port) = self.source {
+            format!("{}:{}", source_port, self.target)
+        } else {
+            format!("{}", self.target)
+        };
         serializer.serialize_str(&s)
     }
 }
@@ -123,6 +142,8 @@ pub struct ComposeServiceFragment {
     pub environment: Option<HashMap<String, String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ports: Option<Vec<PortMapping>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deploy: Option<DeployOptions>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -281,10 +302,12 @@ impl ComposeServiceMap {
             if let Some(p) = service.fragment.ports.as_ref() {
                 p.iter()
                     .for_each(|pm| {
-                        assigned_ports.insert(pm.source);
-                        target_ports.entry(pm.source)
-                            .or_insert_with(Vec::new)
-                            .push(service.name.clone());
+                        if let Some(pm_source) = pm.source {
+                            assigned_ports.insert(pm_source);
+                            target_ports.entry(pm_source)
+                                .or_insert_with(Vec::new)
+                                .push(service.name.clone());
+                        }
                     });
             };
 

@@ -151,10 +151,7 @@ impl ContainerImages {
                 }
             });
 
-        let images = image_map
-            .iter()
-            .map(|(_n, c)| c.clone())
-            .collect::<Vec<_>>();
+        let images = image_map.values().cloned().collect::<Vec<_>>();
 
         if !images.is_empty() {
             let names = images

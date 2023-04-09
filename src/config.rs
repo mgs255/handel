@@ -3,7 +3,6 @@ use std::mem::swap;
 use std::path::Path;
 
 use serde::{Deserialize, Deserializer};
-//use yaml_rust::Yaml;
 use regex::Regex;
 
 use crate::reference::Reference;

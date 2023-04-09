@@ -7,7 +7,8 @@ use http::Uri;
 use tokio_stream::StreamExt;
 
 use aws_config::meta::region::RegionProviderChain;
-use s3::{Client, Region};
+use s3::Client;
+use s3::config::Region;
 
 use snafu::{ResultExt, Snafu};
 
@@ -58,13 +59,13 @@ pub enum Error {
 
     #[snafu(display("Unable download object from S3.\n{}", source))]
     S3GetObject {
-        #[snafu(source(from(s3::SdkError<s3::error::GetObjectError>, Box::new)))]
-        source: Box<s3::SdkError<s3::error::GetObjectError>>,
+        #[snafu(source(from(s3::error::SdkError<s3::operation::get_object::GetObjectError>, Box::new)))]
+        source: Box<s3::error::SdkError<s3::operation::get_object::GetObjectError>>,
     },
 
     #[snafu(display("Error occurred streaming object from S3\n{}", source))]
     S3GetBytes {
-        source: smithy_http::byte_stream::Error,
+        source: s3::primitives::ByteStreamError
     },
 }
 

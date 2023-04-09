@@ -63,7 +63,7 @@ pub fn write_str_to_file(path: &Path, contents: &str) -> Result<()> {
     trace!("{} - opening file {} for writing", module_path!(), &display);
 
     // Open a file in write-only mode, returns `io::Result<File>`
-    let mut file = File::create(&path).context(OpenForWrite { file: &display })?;
+    let mut file = File::create(path).context(OpenForWrite { file: &display })?;
 
     trace!(
         "{} - writing {} bytes file {}",
