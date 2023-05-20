@@ -2,12 +2,13 @@
 
 ![Build status](https://github.com/mgs255/handel/actions/workflows/build.yml/badge.svg?branch=main)
 
-This is simple command line application that takes away a lot of
+This is a simple command line application that takes away a lot of
 the pain when interacting with the `docker` and `docker-compose` tools in 
-development environments.  The tool is heavily based on/inspired by the container-juggler tool
-available from [github](https://github.com/sgeisbacher/container-juggler).
+development environments.  The tool is heavily based on/inspired by the 
+container-juggler tool available from 
+[github](https://github.com/sgeisbacher/container-juggler).
 
-The tool assists the developer in two specific ways:
+The tool assists in two specific ways:
 
   * Automating the construction of a `docker-compose.yml`.  The tool does 
     this by constructing a set of Dockerfile 'fragments' based on selecting
@@ -51,7 +52,8 @@ it requires, we can use something like:
 
 The additional arguments here will override the versions of any local 
 image older than 1 day and instead use the version which matches the 
-service version running in the test reference environment.
+service version running in the test reference environment.  This will end up constructing
+a docker-compose file with 6 services. 
 
 If the compose file fragments have local volumes specified, those volumes
 can be initialised by extracting a zip file which is retrieved some a location 
@@ -125,9 +127,6 @@ volumes:
   
 ## The fragment file format 
 
-*Note:*  In order to be able to compare versions, the fragment-file, image-name and service
-  name in the reference system are all expected to match.
-  
 Each fragment must have at minimum at least an image entry, but the template fragment supports the 
 following sections:
 
@@ -182,7 +181,6 @@ ommitted.
   ...
   { "name": "service_n_name", "version": "service_n_version" },
 ]
-
 ```
 
 ## Building

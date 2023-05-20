@@ -4,6 +4,7 @@ use crate::templates::{ComposeService, ComposeServiceFragment};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
+use log::{debug, info, warn};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -43,23 +44,32 @@ impl DockerCompose {
             local
                 .iter()
                 .fold(HashMap::<String, &ContainerImage>::new(), |mut acc, i| {
-                    acc.insert(i.name(), i);
+                    acc.insert(i.repository(), i);
                     acc
                 });
 
         let versioned = svcs.iter()
             .fold(HashMap::<String,ComposeServiceFragment>::new(), |mut acc, s|{
 
+                let repo = s.image();
+                let image_name = s.name();
                 let image_version = s.fragment().get_version();
 
                 if image_version.is_none() {
-                    eprintln!("Warning - cannot extract image information from template for service: {:?}", s.name());
+                    eprintln!("Warning - cannot extract image information from template for \
+                    service: {:?}", &image_name);
                     return acc;
                 }
 
-                let version = container_lookup.get(&s.name())
+                let version = container_lookup.get(&repo)
                     .map(|i|i.version())
-                    .or_else(||running_svc_lookup.get(&s.name()).map(|r|r.version()));
+                    .or_else(||running_svc_lookup.get(&image_name).map(|r|r.version()));
+
+                if let Some(v) = version.clone() {
+                    debug!("Using {}:{} for image {}", &repo, &v, &image_name);
+                } else {
+                    info!("No recent or reference version found for {} {}", &image_name, &repo)
+                }
 
                 let fragment = s.fragment_using_version(version);
 

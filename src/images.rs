@@ -5,6 +5,7 @@ use serde::Deserialize;
 use tokio::process::Command;
 
 use std::collections::HashMap;
+
 use std::str::FromStr;
 
 use snafu::{ResultExt, Snafu};
@@ -84,6 +85,10 @@ impl ContainerImage {
     pub fn name(self: &ContainerImage) -> String {
         self.name.clone()
     }
+
+    pub fn repository(self: &ContainerImage) -> String {
+        self.container.repository.clone()
+    }
 }
 
 impl ContainerImages {
@@ -157,7 +162,7 @@ impl ContainerImages {
             let names = images
                 .iter()
                 .filter(|&c| !c.container.tag.ends_with("TRUNK"))
-                .map(|c| format!("{}:{}", &c.name, &c.container.tag))
+                .map(|c| format!("{}:{}", &c.container.repository, &c.container.tag))
                 .collect::<Vec<_>>();
             println!("\nRecent images:\n\t{}", names.join("\n\t"));
         }

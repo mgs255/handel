@@ -111,7 +111,6 @@ impl<'de> Deserialize<'de> for PortMapping {
             target: port_a,
         })
     }
-
 }
 
 impl Serialize for PortMapping {
@@ -149,6 +148,7 @@ pub struct ComposeServiceFragment {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ComposeService {
     name: String,
+    image: String,
     fragment: ComposeServiceFragment,
 }
 
@@ -178,8 +178,14 @@ pub struct ComposeServiceMap {
 }
 
 impl ComposeServiceFragment {
-    pub fn get_version(self: &ComposeServiceFragment) -> Option<ImageVersion> {
+    pub fn get_version(self: &Self) -> Option<ImageVersion> {
         ImageVersion::new(&self.image).ok()
+    }
+
+    pub fn get_image_name(self: &Self) -> Option<String> {
+        ImageVersion::new(&self.image)
+            .map(ImageVersion::get_without_version)
+            .ok()
     }
 }
 
@@ -198,6 +204,10 @@ impl ComposeService {
 
     pub fn name(self: &ComposeService) -> String {
         self.name.to_string()
+    }
+
+    pub fn image(self: &ComposeService) -> String {
+        self.image.to_string()
     }
 
     pub fn fragment(self: &ComposeService) -> &ComposeServiceFragment {
@@ -296,6 +306,7 @@ impl ComposeServiceMap {
 
             let service = ComposeService {
                 name: stem.to_string(),
+                image: service_fragment.get_image_name().unwrap(),
                 fragment: service_fragment,
             };
 
@@ -338,8 +349,6 @@ impl ComposeServiceMap {
             }
 
         }
-
-
 
         Ok(ComposeServiceMap { templates })
     }
@@ -394,6 +403,19 @@ impl ImageVersion {
             }
         )
     }
+
+    pub fn get_without_version(self: ImageVersion) -> String {
+        format!(
+            "{}{}",
+            match &self.repository {
+                Some(r) => format!("{}/", r.as_str()),
+                None => "".to_string(),
+            },
+            &self.name
+        )
+    }
+
+
 }
 
 #[cfg(test)]
