@@ -147,9 +147,8 @@ async fn main() -> Result<()> {
     }
 
     let contents =
-        DockerCompose::generate(&required_services, &running_svcs, &images).context(Generate {
-            scenario: scenario.to_string(),
-        })?;
+        DockerCompose::generate(&required_services, &running_svcs, &images)
+            .context(Generate { scenario: scenario.to_string(), })?;
 
     let path = std::path::Path::new("docker-compose.yml");
 

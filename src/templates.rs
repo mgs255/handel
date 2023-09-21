@@ -178,11 +178,11 @@ pub struct ComposeServiceMap {
 }
 
 impl ComposeServiceFragment {
-    pub fn get_version(self: &Self) -> Option<ImageVersion> {
+    pub fn get_version(&self) -> Option<ImageVersion> {
         ImageVersion::new(&self.image).ok()
     }
 
-    pub fn get_image_name(self: &Self) -> Option<String> {
+    pub fn get_image_name(&self) -> Option<String> {
         ImageVersion::new(&self.image)
             .map(ImageVersion::get_without_version)
             .ok()
@@ -190,6 +190,16 @@ impl ComposeServiceFragment {
 }
 
 impl ComposeService {
+
+    #[cfg(test)]
+    pub fn new(name: &str, image: &str, frag: &ComposeServiceFragment) -> ComposeService {
+        ComposeService {
+            name: name.to_string(),
+            image: image.to_string(),
+            fragment: frag.clone()
+        }
+    }
+
     pub fn get_dependencies(self: &ComposeService) -> Vec<String> {
         let mut dependencies = Vec::<String>::new();
 
@@ -285,7 +295,7 @@ impl ComposeServiceMap {
             let ext = b.extension().and_then(|s| s.to_str()).unwrap_or("");
 
             if !ext.eq("yml") && !ext.eq("yaml") {
-                warn!(
+                debug!(
                     "{} - Ignoring invalid file: {}",
                     module_path!(),
                     file_name.unwrap()
@@ -415,7 +425,11 @@ impl ImageVersion {
         )
     }
 
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
 
+    pub fn get_version(&self) -> Option<String> { self.version.clone() }
 }
 
 #[cfg(test)]
@@ -490,9 +504,9 @@ ports:
         assert!(frag.ports.is_some());
         let ports = frag.ports.unwrap();
         assert_eq!(ports.len(), 2);
-        assert_eq!(121, ports.get(0).unwrap().source);
+        assert_eq!(Some(121), ports.get(0).unwrap().source);
         assert_eq!(343, ports.get(0).unwrap().target);
-        assert_eq!(212, ports.get(1).unwrap().source);
+        assert_eq!(Some(212), ports.get(1).unwrap().source);
         assert_eq!(434, ports.get(1).unwrap().target);
     }
 

@@ -50,6 +50,8 @@ pub struct RunningService {
     version: String,
 }
 
+
+
 pub struct RunningServices {
 }
 
@@ -62,6 +64,15 @@ pub struct Reference {
 }
 
 impl RunningService {
+
+    #[cfg(test)]
+    pub fn new(name: &str, version: &str) -> Self {
+        RunningService {
+            name: name.to_string(),
+            version: version.to_string()
+        }
+    }
+
     pub fn name(self: &RunningService) -> String {
         self.name.clone()
     }
@@ -72,6 +83,7 @@ impl RunningService {
 }
 
 impl RunningServices {
+
     pub async fn load(env: &str, reference: &Option<Reference>) -> Result<Vec<RunningService>> {
         if reference.is_none() {
             return Ok(Vec::new());

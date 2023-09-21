@@ -4,9 +4,8 @@
 
 This is a simple command line application that takes away a lot of
 the pain when interacting with the `docker` and `docker-compose` tools in 
-development environments.  The tool is heavily based on/inspired by the 
-container-juggler tool available from 
-[github](https://github.com/sgeisbacher/container-juggler).
+development environments.  The tool is heavily based on and inspired by  
+[container-juggler](https://github.com/sgeisbacher/container-juggler).
 
 The tool assists in two specific ways:
 
@@ -14,10 +13,10 @@ The tool assists in two specific ways:
     this by constructing a set of Dockerfile 'fragments' based on selecting
     one of a specified set of 'scenarios'.
     
-  * Synchronises the versions of the images used in the docker-compose files 
+  * Synchronising the versions of the images used in the docker-compose files 
     using a combination of the local docker registry and the versions specified 
     via an external reference system, which is assumed to be accessible via an 
-    HTTP GET request. 
+    HTTP GET request.
         
 Unlike the container-juggler tool, scenarios nest and also use the docker-compose
 'depends_on' directive to construct a list of scenario dependencies.
@@ -69,7 +68,8 @@ that default configuration for the AWS CLI must allow access to any given S3 URI
   
 The configuration file is defined in YAML, and has 4 sections:
 
-* template-folder-path (string): path containing the docker-compose fragments.
+* template-folder-path (string): path containing the docker-compose fragments.  Each
+  fragment describes the properties required for a single service.
 * reference (object - optional): an HTTP endpoint from which to fetch a list of 
   'reference' versions of a service.  If there is no local image which is more
   recent than the 'since' time, then that reference version will be used instead. 
@@ -155,7 +155,7 @@ ports:
     - 7932:5005
 ```
 
-The program will ignore the respository prefix, and extract the service name (again assuming 
+The program will ignore the repository prefix, and extract the service name (again assuming 
 that the service name has the same name as the image).  Note that in this case, the service 
 depends on mysql and kafka and these services will be added as required dependent services.
 
@@ -172,20 +172,17 @@ ommitted.
 * `jq_filter` - a jq script to convert the JSON body, into a JSON array.  If this field is defined 
   the program will attempt to spawn the jq tool piping in the JSON body from the given URL, 
   and read its output.  The output of the filtered JSON body is expected to be 
-  a JSON array of the form: 
+  a JSON array of objects, containing `name` and `version` properties, e.g:
 
 ```json
 [ 
   { "name": "service_1_name", "version": "service_1_version" },
   { "name": "service_2_name", "version": "service_2_version" },
-  ...
   { "name": "service_n_name", "version": "service_n_version" },
 ]
 ```
 
 ## Building
-
-Requires a recent version of rust.
 
 ```
 $ rustup show

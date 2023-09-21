@@ -62,6 +62,7 @@ pub struct LocalContainerImage {
 
 #[derive(Debug, Clone)]
 pub struct ContainerImage {
+    #[allow(dead_code)]
     name: String,
     container: LocalContainerImage,
 }
@@ -70,6 +71,7 @@ pub struct ContainerImage {
 pub struct ContainerImages {
 }
 
+#[allow(dead_code)]
 impl ContainerImage {
     fn new(name: &str, image: LocalContainerImage) -> ContainerImage {
         ContainerImage {
@@ -95,11 +97,13 @@ impl ContainerImages {
     pub async fn find(since: &str) -> Result<Vec<ContainerImage>> {
         let since = parse_since_string(since)?;
 
-        debug!("{} - got since duration: {:?}", module_path!(), &since);
+        warn!("{} - got since duration: {:?}", module_path!(), &since);
 
         let container_age_limit = Utc::now()
             .checked_sub_signed(since)
             .expect("Internal error: unable to calculate minimum datetime from given since string");
+
+        warn!("{:?}", &container_age_limit);
 
         let output = Command::new("docker")
             .arg("images")
@@ -111,10 +115,15 @@ impl ContainerImages {
 
         let mut image_map: HashMap<String, ContainerImage> = HashMap::new();
 
+        warn!("{} - got since duration: {:?}", module_path!(), &since);
+
         String::from_utf8(output.stdout)
             .context(ParseChildOutput)?
             .lines()
-            .filter_map(|line| serde_json::from_str::<LocalContainerImage>(line).ok())
+            .filter_map(|line| {
+                println!("{:?}", &line);
+                serde_json::from_str::<LocalContainerImage>(line).ok()
+            })
             .filter(|lc| {
                 debug!("id: {} tag: {} size: {}", &lc.id, &lc.tag, &lc.size);
                 !matches!(lc.tag.as_str(), "TRUNK")
@@ -167,6 +176,8 @@ impl ContainerImages {
             println!("\nRecent images:\n\t{}", names.join("\n\t"));
         }
 
+        println!("\nFinished images.....");
+
         Ok(images)
     }
 }
@@ -206,7 +217,7 @@ fn get_service_name_from_repository(repo: &str) -> Option<String> {
 }
 
 mod docker_image_datetime_format {
-    use chrono::{DateTime, Local, TimeZone, Utc};
+    use chrono::{DateTime, Utc};
     use serde::{self, Deserialize, Deserializer};
 
     const FORMAT: &str = "%Y-%m-%d %H:%M:%S %z %Z";
@@ -217,11 +228,12 @@ mod docker_image_datetime_format {
     {
         let s = String::deserialize(deserializer)?;
 
+        println!("{}", s);
+
         // Convert the local date timestamps to UTC.
-        Local
-            .datetime_from_str(&s, FORMAT)
+        DateTime::parse_from_str(&s, FORMAT)
             .map_err(serde::de::Error::custom)
-            .map(|l| DateTime::<Utc>::from_utc(l.naive_utc(), Utc))
+            .map(|d| d.with_timezone(&Utc) )
     }
 }
 
@@ -285,10 +297,10 @@ mod tests {
 
     #[test]
     fn test_time_deserializer() {
-        let expected: DateTime<Utc> = Utc.ymd(2020, 2, 27).and_hms(07, 35, 09);
+        let expected: DateTime<Utc> = Utc.with_ymd_and_hms(2020, 2, 27, 07, 35, 09).unwrap();
         let test_data = r#"{"CreatedAt":"2020-02-27 07:35:09 +0000 UTC"}"#;
-        let deser: TestTime = serde_yaml::from_str(test_data).unwrap();
+        let de: TestTime = serde_yaml::from_str(test_data).unwrap();
 
-        assert_eq!(expected, deser.created_at, "Times should match");
+        assert_eq!(expected, de.created_at, "Times should match");
     }
 }
