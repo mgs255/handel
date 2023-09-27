@@ -152,5 +152,5 @@ async fn main() -> Result<()> {
 
     let path = std::path::Path::new("docker-compose.yml");
 
-    crate::utils::write_str_to_file(path, &contents).context(WriteComposeFile)
+    utils::write_str_to_file(path, &contents).context(WriteComposeFile)
 }

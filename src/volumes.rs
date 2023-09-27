@@ -142,9 +142,11 @@ impl Volumes {
                 true => unzip_file_from_s3(v).await?,
                 false => unzip_local_file(v)?,
             };
+
+            info!("Finished volumes: {}", &v.name);
         }
 
-        println!("\nFinished initialising volumes.....");
+        debug!("Finished initialising volumes");
 
         Ok(())
     }

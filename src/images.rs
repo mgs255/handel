@@ -97,13 +97,13 @@ impl ContainerImages {
     pub async fn find(since: &str) -> Result<Vec<ContainerImage>> {
         let since = parse_since_string(since)?;
 
-        warn!("{} - got since duration: {:?}", module_path!(), &since);
+        trace!("{} - got since duration: {:?}", module_path!(), &since);
 
         let container_age_limit = Utc::now()
             .checked_sub_signed(since)
             .expect("Internal error: unable to calculate minimum datetime from given since string");
 
-        warn!("{:?}", &container_age_limit);
+        trace!("{:?}", &container_age_limit);
 
         let output = Command::new("docker")
             .arg("images")
@@ -115,13 +115,12 @@ impl ContainerImages {
 
         let mut image_map: HashMap<String, ContainerImage> = HashMap::new();
 
-        warn!("{} - got since duration: {:?}", module_path!(), &since);
+        trace!("{} - got since duration: {:?}", module_path!(), &since);
 
         String::from_utf8(output.stdout)
             .context(ParseChildOutput)?
             .lines()
             .filter_map(|line| {
-                println!("{:?}", &line);
                 serde_json::from_str::<LocalContainerImage>(line).ok()
             })
             .filter(|lc| {
@@ -176,7 +175,7 @@ impl ContainerImages {
             println!("\nRecent images:\n\t{}", names.join("\n\t"));
         }
 
-        println!("\nFinished images.....");
+        debug!("\nFinished images.....");
 
         Ok(images)
     }
@@ -227,8 +226,6 @@ mod docker_image_datetime_format {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-
-        println!("{}", s);
 
         // Convert the local date timestamps to UTC.
         DateTime::parse_from_str(&s, FORMAT)
