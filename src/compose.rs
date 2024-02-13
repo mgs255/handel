@@ -69,10 +69,17 @@ impl DockerCompose {
                     .or_else(||running_svc_lookup.get(&image_name).map(|r|r.version()))
                     .or_else(||image_version.get_version());
 
+                let image_parts : Vec<&str> = repo.splitn(2, '/' ).collect();
+                let plain_repo = match image_parts.len() {
+                    2 => image_parts.get(1).unwrap(),
+                    _ => repo.as_str()
+                };
+
+
                 if let Some(v) = version.clone() {
-                    println!("\t{} -> {}:{}", &service_name, &repo, &v);
+                    println!("\t{} -> {}:{}", &service_name, &plain_repo, &v);
                 } else {
-                    println!("\t{} -> {}", &service_name, &repo);
+                    println!("\t{} -> {}", &service_name, &plain_repo);
                 }
 
                 let fragment = s.fragment_using_version(version);
