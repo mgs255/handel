@@ -207,6 +207,11 @@ This should be copied to somewhere on the PATH.
 
 `RUST_LOG='smithy_http_tower::dispatch=trace,smithy_http::middleware=trace'` handel ..
  
+## Changelog
+
+* 0.3.14 - Update tokio and aws-sdk dependencies.  Switch to using rustls and disabling openssl
+           due to issues building on old versions of Ubuntu.
+
 ## To do
 
 * Consider using an identifier e.g: @ or ! to explicitly mark an 
