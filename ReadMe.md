@@ -209,8 +209,14 @@ This should be copied to somewhere on the PATH.
  
 ## Changelog
 
-* 0.3.14 - Update tokio and aws-sdk dependencies.  Switch to using rustls and disabling openssl
-           due to issues building on old versions of Ubuntu.
+* 0.3.15
+  * Fix invalid combination of aws-rust-sdk feature flags - fixed by adding tokio-rt and
+    sso flags.
+  * Tidy up output
+           
+* 0.3.14 
+  * Update tokio and aws-sdk dependencies.  Switch to using rustls and disabling openssl
+    due to issues building on old versions of Ubuntu.
 
 ## To do
 

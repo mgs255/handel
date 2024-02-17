@@ -143,7 +143,7 @@ async fn main() -> Result<()> {
             .map(|c| c.name())
             .collect::<Vec<_>>();
         names.sort();
-        println!("\nRequired services:\n\t{}", names.join("\n\t"));
+        println!("Required services:\n\t{}", names.join("\n\t"));
     }
 
     let contents =

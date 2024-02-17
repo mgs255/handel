@@ -1,6 +1,6 @@
 [package]
 name = "handel"
-version = "0.3.14"
+version = "0.3.15"
 authors = ["Michael Sommerville <msommerville@gmail.com>"]
 edition = "2021"
 
@@ -12,8 +12,8 @@ codegen-units = 1
 [dependencies]
 tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "process"] }
 tokio-rustls = "0.25.0"
-aws-config =  { version = "1.1.5", default-features = false, features = ["rustls"] }
-s3 = { package="aws-sdk-s3", version = "1.1.5", default-features = false, features = ["rustls"] }
+aws-config =  { version = "1.1.5", default-features = false, features = ["rustls", "rt-tokio", "sso"] }
+s3 = { package="aws-sdk-s3", version = "1.1.5", default-features = false, features = ["rustls", "rt-tokio"] }
 yaml-rust = "0.4"
 clap = {version = "2.34.0", features = ["yaml"]}
 reqwest = { version = "0.11.24", default-features = false, features = ["json", "rustls-tls"] }

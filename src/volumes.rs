@@ -122,6 +122,7 @@ impl Volumes {
                 let target_dir = t.unwrap().to_string();
 
                 if !target_dir_valid(&target_dir) {
+                    println!("Skipping volume target: {}", &target_dir);
                     return None;
                 }
 
@@ -133,10 +134,14 @@ impl Volumes {
             })
             .collect::<Vec<_>>();
 
+        if vols.is_empty() {
+            return Ok(());
+        }
+
         info!("{} - Volumes: {:?}", module_path!(), &vols);
 
         for v in &vols {
-            info!("Processing volume: {}", &v.name);
+            println!("Processing volume: {}", &v.name);
             match v.source.to_lowercase().starts_with("s3://") {
                 true => unzip_file_from_s3(v).await?,
                 false => unzip_local_file(v)?,
@@ -145,7 +150,7 @@ impl Volumes {
             info!("Finished volumes: {}", &v.name);
         }
 
-        debug!("Finished initialising volumes");
+        println!("Finished initialising volumes\n");
 
         Ok(())
     }
@@ -263,7 +268,7 @@ async fn unzip_file_from_s3(volume: &VolumeInitializer) -> Result<()> {
                     bytes_downloaded,
                     &volume.source
                 );
-                print!(".")
+                //print!(".")
             }
             Err(e) => {
                 error!(

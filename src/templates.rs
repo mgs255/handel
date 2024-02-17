@@ -344,7 +344,7 @@ impl ComposeServiceMap {
                 })
                 .collect::<Vec<_>>();
 
-            eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}",
+            eprintln!("Warning: The following host port conflicts exist:\n\tPort\tConflicting\n{}\n",
                       conflicting_ports.join("\n") );
 
             if let Some(r) = port_range {
@@ -354,7 +354,7 @@ impl ComposeServiceMap {
                     .map(|p|format!("\t{}", p))
                     .collect::<Vec<_>>();
 
-                eprintln!("The following host ports are free in the port-range:\n{}",
+                eprintln!("The following host ports are free in the port-range:\n{}\n",
                           free_ports.join("\n") );
             }
 

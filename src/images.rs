@@ -172,7 +172,7 @@ impl ContainerImages {
                 .filter(|&c| !c.container.tag.ends_with("TRUNK"))
                 .map(|c| format!("{}:{}", &c.container.repository, &c.container.tag))
                 .collect::<Vec<_>>();
-            println!("\nRecent images:\n\t{}", names.join("\n\t"));
+            println!("\nRecent images:\n\t{}\n", names.join("\n\t"));
         }
 
         debug!("\nFinished images.....");

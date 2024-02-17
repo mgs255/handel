@@ -26,10 +26,7 @@ impl DockerCompose {
         local: &[ContainerImage],
     ) -> Result<String> {
 
-        println!(
-            "\nGenerating docker compose file based on {} services:",
-            svcs.len()
-        );
+        let mut svc_versions = Vec::<String>::new();
 
         let running_svc_lookup =
             running
@@ -76,11 +73,13 @@ impl DockerCompose {
                 };
 
 
-                if let Some(v) = version.clone() {
-                    println!("\t{} -> {}:{}", &service_name, &plain_repo, &v);
+                let svc_name = if let Some(v) = &version {
+                    format!("{} -> {}:{}", &service_name, &plain_repo, &v.clone())
                 } else {
-                    println!("\t{} -> {}", &service_name, &plain_repo);
-                }
+                    format!("{} -> {}", &service_name, &plain_repo)
+                };
+
+                svc_versions.push(svc_name.to_owned());
 
                 let fragment = s.fragment_using_version(version);
 
@@ -88,6 +87,12 @@ impl DockerCompose {
 
                 acc
             });
+
+        println!(
+            "\nGenerating docker compose file based on {} services:\n\t{}",
+            svcs.len(),
+            svc_versions.join("\n\t")
+        );
 
         let compose = DockerCompose {
             version: String::from("3"),
