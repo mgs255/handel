@@ -153,9 +153,9 @@ pub struct ComposeServiceFragment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deploy: Option<DeployOptions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub command: Option<Command>,
+    pub command: Option<CommandLine>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub entrypoint: Option<Command>,
+    pub entrypoint: Option<CommandLine>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
