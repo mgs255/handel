@@ -69,7 +69,7 @@ pub struct PortMapping {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum Command {
+pub enum CommandLine {
     Single(String),
     List(Vec<String>),
 }
