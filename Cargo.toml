@@ -1,6 +1,6 @@
 [package]
 name = "handel"
-version = "0.3.15"
+version = "0.3.16"
 authors = ["Michael Sommerville <msommerville@gmail.com>"]
 edition = "2021"
 
