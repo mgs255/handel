@@ -67,6 +67,13 @@ pub struct PortMapping {
     target: u16,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CommandLine {
+    Single(String),
+    List(Vec<String>),
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DeployOptions {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -145,6 +152,10 @@ pub struct ComposeServiceFragment {
     pub ports: Option<Vec<PortMapping>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deploy: Option<DeployOptions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub command: Option<CommandLine>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub entrypoint: Option<CommandLine>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
